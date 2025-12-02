@@ -121,7 +121,7 @@ def read_monthly_temps_from_frost(metnosid: str, frost_client_id: str, homogenis
     parameters = {
         "sources": metnosid,
         "elements": var_name,
-        "referencetime": f"1850-01-01/{pd.Timestamp.utcnow().strftime('%Y-%m-%d')}",
+        "referencetime": f"1837-01-01/{pd.Timestamp.utcnow().strftime('%Y-%m-%d')}",
         "timeoffsets": "default",
         "levels": "default",
         "qualities": "0,1,2,3,4",
@@ -148,6 +148,67 @@ def read_monthly_temps_from_frost(metnosid: str, frost_client_id: str, homogenis
     df.index = pd.to_datetime(df.index.date)
 
     return df.value.rename("tmon")
+
+
+def read_annual_temps_from_frost(metnosid: str, frost_client_id: str, homogenised=True):
+    """Retrieve annual temperature data from Frost API. By default, homogenised timeseries are retrieved.
+
+    @author: Amalie Skålevåg (amalie.skalevag@met.no), Herman F. Fuglestvedt
+
+    Parameters
+    ----------
+    metnosid : str
+        station identification number of Norwegian weather station, e.g. 'SN18700'
+    frost_client_id : str
+        client ID for Frost API, see https://frost.met.no/howto.html
+    homogenised : bool, optional
+        whether to use homogenised monthly temperatures or not, by default True
+        homogenised timeseries tend to be longer
+
+    Returns
+    -------
+    pandas.Series
+        time series of annual temperatures
+    """
+
+    # determine variable name
+    if homogenised:
+        var_name = "best_estimate_mean(air_temperature P1Y)"
+    else:
+        var_name = "mean(air_temperature P1Y)"
+
+    # Define endpoint and parameters
+    endpoint = "https://frost.met.no/observations/v0.jsonld"
+    parameters = {
+        "sources": metnosid,
+        "elements": var_name,
+        "referencetime": f"1837-01-01/{pd.Timestamp.utcnow().strftime('%Y-%m-%d')}",
+        "timeoffsets": "default",
+        "levels": "default",
+        "qualities": "0,1,2,3,4",
+    }
+
+    r = requests.get(endpoint, parameters, auth=(frost_client_id, ""))
+    # Extract JSON data
+    json = r.json()
+
+    # Check if the request worked, print out any errors
+    if r.status_code == 200:
+        data = json["data"]
+    else:
+        print("Error! Returned status code %s" % r.status_code)
+        print("Message: %s" % json["error"]["message"])
+        print("Reason: %s" % json["error"]["reason"])
+        raise RuntimeError(f'{json["error"]["message"]}. {json["error"]["reason"]}')
+
+    # Create DataFrame from list of dictionaries
+    df = pd.concat([pd.DataFrame(data[i]["observations"], index=[pd.to_datetime(data[i]["referenceTime"])]) for i in range(len(data))])
+    # sort chronologically
+    df.sort_index(inplace=True)
+    # index to dates
+    df.index = pd.to_datetime(df.index.date)
+
+    return df.value.rename("tann")
 
 
 def find_nearest(array, value):
@@ -192,14 +253,16 @@ def get_target_text(target_mon):
     }
     return target_text[target_mon]
 
+
 def read_global_temperature(input_path):
 
     ## READ observed global temperature
-    glob_obs_ds = xr.open_dataset(input_path + 'input_data/HadCRUT.5.0.2.0.analysis.summary_series.global.annual.nc')
-    glob_obs_temp = glob_obs_ds['tas_mean'].squeeze().sel(time=slice('1850-01-01','2024-12-31'))
-    glob_obs_temp['time'] = glob_obs_temp.time.dt.year
+    glob_obs_ds = xr.open_dataset(input_path + "input_data/HadCRUT.5.0.2.0.analysis.summary_series.global.annual.nc")
+    glob_obs_temp = glob_obs_ds["tas_mean"].squeeze().sel(time=slice("1850-01-01", "2024-12-31"))
+    glob_obs_temp["time"] = glob_obs_temp.time.dt.year
 
     return glob_obs_temp
+
 
 def read_obs_temp(input_path, fmisid, target_mon):
 
@@ -272,7 +335,10 @@ def read_obs_temp_frost(frost_client_id, metnosid, target_mon):
         obs_temp = all_obs_months.rolling(window=3).mean()[all_obs_months.index.month == 11].loc[slice("1850-01-01", None)]
         obs_temp.index = obs_temp.index.year
     elif target_mon == 17:
-        obs_temp = all_obs_months.groupby(all_obs_months.index.year).apply(lambda g: g.mean(skipna=False)).loc[1850:]
+        all_obs_homog = read_annual_temps_from_frost(metnosid, frost_client_id, homogenised=True)
+        all_obs_new = read_annual_temps_from_frost(metnosid, frost_client_id, homogenised=False)
+        all_obs = pd.concat([all_obs_homog, all_obs_new["2021":]])  # add the last few years of annual data from non-homogenised time series
+        obs_temp = all_obs.groupby(all_obs.index.year).apply(lambda g: g.mean(skipna=False)).loc[1850:]
     if target_mon > 17:
         import sys
 
@@ -313,6 +379,7 @@ def read_sim_temp_single_models(input_path, ssp, glob_obs_temp):
 
     return glob_temp_smooth
 
+
 def read_sim_temp_model_mean(input_path, ssp, glob_obs_temp):
 
     filename = input_path + "model_mean/" + ssp + "_g11_CMIP6_modelmean.nc"
@@ -347,18 +414,19 @@ def read_coeffs_model_mean(input_path, ssp, target_mon, obs_lat, obs_lon):
 
     coeff_ds = xr.open_dataset(filename)
     coeffs = coeff_ds.sel(lat=obs_lat, lon=obs_lon, method="nearest").isel(time=target_mon - 1).squeeze()
-    
-    return coeffs
-    
 
-def read_coeffs_single_models(input_path,ssp, target_mon, obs_lat, obs_lon):
-       
-    filename = input_path + 'single_models/tas_'+ssp+'_regr_coeffs_CMIP6_all_models_combined.nc'
-    
+    return coeffs
+
+
+def read_coeffs_single_models(input_path, ssp, target_mon, obs_lat, obs_lon):
+
+    filename = input_path + "single_models/tas_" + ssp + "_regr_coeffs_CMIP6_all_models_combined.nc"
+
     coeff_ds = xr.open_dataset(filename).load()
-    coeffs =coeff_ds.sel(lat=obs_lat, lon=obs_lon, method='nearest').isel(time=target_mon-1).squeeze()
+    coeffs = coeff_ds.sel(lat=obs_lat, lon=obs_lon, method="nearest").isel(time=target_mon - 1).squeeze()
 
     return coeffs
+
 
 def modify_obs(obs_temp, glob_temp, coeffs, y_target):
 
@@ -389,7 +457,7 @@ def modify_obs(obs_temp, glob_temp, coeffs, y_target):
     return fmod.loc[obs_temp.index]
 
 
-def frsgs(y,valmax,valmin,nbins):
+def frsgs(y, valmax, valmin, nbins):
 
     # This function converts a sample of (original or modified) observations (y)
     # to a continuous SGS probability distribution (f). The corresponding
@@ -546,15 +614,16 @@ def find_difference_interval(x, cp_target_arr, cp_preind_arr, i):
 
     return (np.percentile(cp_df, 5), np.percentile(cp_df, 95), cp_df)
 
+
 def get_obs_coeffs(obs_datasets, input_path, target_mon, obs_lat, obs_lon):
 
-    obs_coeffs = pd.DataFrame(columns=obs_datasets, index=['aam','aav'])
-    
+    obs_coeffs = pd.DataFrame(columns=obs_datasets, index=["aam", "aav"])
+
     for obs in obs_datasets:
-        ds = xr.open_dataset(input_path + "input_data/obs_regr_coeffs_"+obs+".nc")
-        ds = ds.isel(time=target_mon-1)
-        ds = ds.sel(lat=obs_lat, lon=obs_lon, method='nearest').to_pandas()
+        ds = xr.open_dataset(input_path + "input_data/obs_regr_coeffs_" + obs + ".nc")
+        ds = ds.isel(time=target_mon - 1)
+        ds = ds.sel(lat=obs_lat, lon=obs_lon, method="nearest").to_pandas()
 
         obs_coeffs[obs] = ds
-    
+
     return obs_coeffs
