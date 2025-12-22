@@ -1,0 +1,49 @@
+# configuration for attribution analysis
+
+application:
+  name: fmiRRR
+  url: https://github.com/fmidev/cmip6-attribution/
+
+# station
+station: 
+  id: "SN18700" # int if FMI or str if MetNo
+  organisation: "MetNo" # FMI or MetNo
+  frost_client_id: "f2393df4-a312-4c7a-a287-cc0fd6180af1" # client ID for Frost API, see https://frost.met.no/howto.html
+
+analysis:
+  target_mon: 17   # Target Month (1-12) / Season (13-16) / Annual mean (17)? (e.g., 12)
+  y_target: 2025  # Target year
+  y_climate: 2050 # Future climate year
+  y_preind: 1900  # Preindustrial climate year
+  pwarm: True # probability of warmer temperatures (colder if false)
+  ssp: "ssp370" # Scenario for future climate (ssp119, ssp126, ssp245, ssp370, ssp585)
+
+general_settings:
+  y1base: 1850 # first year of observations used in calculation of probability distributions
+  y2base: 2024 # last year of observations used in calculation of probability distributions
+  # Assuming monthly mean temperatures are within -40 ... +40 C
+  valmin: -40.0
+  valmax: 40.0
+  nbins: 1601
+  n_bts: 10 # Number of bootstrapping in the uncertainty estimate
+  input_path: "/home/amska0224/Documents/Prosjekter/Attribusjonstjeneste/Tools_testing/cmip6-attribution/" # input path for the datafiles
+  figurePath: "/home/amska0224/Documents/Prosjekter/Attribusjonstjeneste/Tools_testing/cmip6-attribution/figures/2025_annual/" # output path for figures
+  output_path: "/home/amska0224/Documents/Prosjekter/Attribusjonstjeneste/Tools_testing/cmip6-attribution/results/2025_annual/"
+  save_results: True
+  add_station_name_to_filename: True
+
+plotting:
+  colors:
+    preind: "#1D7D36" # default: "#1b9e77"
+    target: "#0090a8" # default: "royalblue"
+    future: "#BF7AA8" # default: "#e7298a"
+    target_hist: "#badee4" # default: "skyblue"
+    textbox: "#e9e9e9" # default: "wheat"
+    target_magnitude: "#0b455e" # default: "steelblue"
+    obs: "black" #default: "black"
+    pseudo_obs: "#0090a8" # default: "steelblue"
+    pseudo_obs_uncertainty: "#badee4" # default: "red"
+    boxplot_median: "#3D3359"
+    boxplot_face: "#7974AF"
+    boxplot_edge: "black"
+  textbox_in_dist_plot: True
