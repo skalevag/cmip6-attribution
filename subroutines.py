@@ -35,7 +35,7 @@ def get_station_metadata(fmisid):
     return df["latitude"][0], df["longitude"][0], df["stationname"][0]
 
 
-def get_station_metadata_frost(metnosid: str, frost_client_id: str):
+def get_station_metadata_frost(metnosid: str, frost_client_id: str, full=False):
     """Get relevant metadata on station from Frost API.
 
     @author: Amalie Skålevåg (amalie.skalevag@met.no)
@@ -65,7 +65,10 @@ def get_station_metadata_frost(metnosid: str, frost_client_id: str):
     json = r.json()
     lon, lat = json["data"][0]["geometry"]["coordinates"]
 
-    return lat, lon, json["data"][0]["shortName"]
+    if full:
+        return json
+    else:
+        return lat, lon, json["data"][0]["shortName"]
 
 
 def read_monthly_temps_from_smartmet(fmisid):
@@ -146,6 +149,8 @@ def read_monthly_temps_from_frost(metnosid: str, frost_client_id: str, homogenis
     df.sort_index(inplace=True)
     # index to dates
     df.index = pd.to_datetime(df.index.date)
+    # reindex to fill missing months with NaN
+    df = df.reindex(pd.date_range(df.index[0], df.index[-1], freq="1MS"))
 
     return df.value.rename("tmon")
 
@@ -162,7 +167,7 @@ def read_annual_temps_from_frost(metnosid: str, frost_client_id: str, homogenise
     frost_client_id : str
         client ID for Frost API, see https://frost.met.no/howto.html
     homogenised : bool, optional
-        whether to use homogenised monthly temperatures or not, by default True
+        whether to use homogenised annual temperatures or not, by default True
         homogenised timeseries tend to be longer
 
     Returns
@@ -335,10 +340,7 @@ def read_obs_temp_frost(frost_client_id, metnosid, target_mon):
         obs_temp = all_obs_months.rolling(window=3).mean()[all_obs_months.index.month == 11].loc[slice("1850-01-01", None)]
         obs_temp.index = obs_temp.index.year
     elif target_mon == 17:
-        all_obs_homog = read_annual_temps_from_frost(metnosid, frost_client_id, homogenised=True)
-        all_obs_new = read_annual_temps_from_frost(metnosid, frost_client_id, homogenised=False)
-        all_obs = pd.concat([all_obs_homog, all_obs_new["2021":]])  # add the last few years of annual data from non-homogenised time series
-        obs_temp = all_obs.groupby(all_obs.index.year).apply(lambda g: g.mean(skipna=False)).loc[1850:]
+        obs_temp = all_obs_months.groupby(all_obs_months.index.year).apply(lambda g: g.mean(skipna=False)).loc[1850:]
     if target_mon > 17:
         import sys
 
