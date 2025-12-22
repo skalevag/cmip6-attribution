@@ -458,14 +458,14 @@ if pwarm:
     ax2.fill_between(x, f_preind, where=x >= target_value, color=colors["preind"], zorder=5, alpha=0.7)
     ax2.fill_between(x, f_target, where=x >= target_value, color=colors["target"], zorder=4, alpha=0.7)
     ax2.fill_between(x, f_future, where=x >= target_value, color=colors["future"], zorder=3, alpha=0.7)
-    probtext = "Probability\ of\ T\ ≥\ " + f"{np.round(target_value,1):.1f}°C"
-    returntext = "Return\ period\ of\ T\ ≥\ " + f"{np.round(target_value,1):.1f}°C"
+    probtext = "Probability of T ≥ " + f"{np.round(target_value,1):.1f}°C"
+    returntext = "Return period of T ≥ " + f"{np.round(target_value,1):.1f}°C"
 else:
     ax2.fill_between(x, f_preind, where=x <= target_value, color=colors["preind"], zorder=3, alpha=0.7)
     ax2.fill_between(x, f_target, where=x <= target_value, color=colors["target"], zorder=4, alpha=0.7)
     ax2.fill_between(x, f_future, where=x <= target_value, color=colors["future"], zorder=5, alpha=0.7)
-    probtext = "Probability\ of\ T\ ≤\ " + f"{np.round(target_value,1):.1f}°C"
-    returntext = "Return\ period\ of\ T\ ≤\ " + f"{np.round(target_value,1):.1f}°C"
+    probtext = "Probability of T ≤ " + f"{np.round(target_value,1):.1f}°C"
+    returntext = "Return period of T ≤ " + f"{np.round(target_value,1):.1f}°C"
 
 # ax.tick_params(axis='both', which='major')
 for ax in axlist:
@@ -479,21 +479,21 @@ ax1.legend(loc="upper right", frameon=False, ncol=3, bbox_to_anchor=(0.92, 1.1))
 ax2.legend(loc="upper right", frameon=False, ncol=3, bbox_to_anchor=(1, 1.1))
 
 
-howtext = "Intensity\  "
+howtext = "Intensity  "
 
 textstr = "\n".join(
     (
         place_text,
         target_text,
         "",
-        r"$\bf{" + probtext + "}$",
+        r"$\bf{" + probtext.replace(" ", r"\ ") + "}$",
         str(y1base) + "-" + str(y2base) + ": " + f"{np.round(prob_in_obs*100,1):.1f} (" + f"{np.round(prob_in_obs_up*100,1):.1f}-" + f"{np.round(prob_in_obs_low*100,1):.1f}) %",
         "",
         "'" + str(y_preind) + "'" + ": " + f"{np.round(prob_in_preind*100,1):.1f} (" + f"{np.round(prob_in_preind_up*100,1):.1f}-" + f"{np.round(prob_in_preind_low*100,1):.1f}) %",
         "'" + str(y_target) + "'" + ": " + f"{np.round(prob_in_target*100,1):.1f} (" + f"{np.round(prob_in_target_up*100,1):.1f}-" + f"{np.round(prob_in_target_low*100,1):.1f}) %",
         "'" + str(y_climate) + "'" + ": " + f"{np.round(prob_in_future*100,1):.1f} (" + f"{np.round(prob_in_future_up*100,1):.1f}-" + f"{np.round(prob_in_future_low*100,1):.1f}) %",
         "",
-        r"$\bf{" + returntext + "}$",
+        r"$\bf{" + returntext.replace(" ", r"\ ") + "}$",
         # str(y1base)+'-'+str(y2base)+': '+f'{np.round(1/prob_in_obs,0):.0f} ('+\
         # f'{np.round(1/prob_in_obs_low,0):.0f}-'+f'{np.round(1/prob_in_obs_up,0):.0f}) years',
         "",
