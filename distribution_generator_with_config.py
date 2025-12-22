@@ -555,12 +555,12 @@ filtered_data = [d[m] for d, m in zip(PRratios.T, mask.T)]
 pr_ratio_bp = np.array(pr_ratio)
 pr_ratio_bp = pr_ratio_bp.reshape(pr_ratio_bp.shape + (1,))
 
-a = ax.boxplot(filtered_data, positions=np.arange(0, n_mod), labels=model_names, vert=False, showfliers=False, medianprops=medianprops, whis=(5, 95), widths=0.7)
+a = ax.boxplot(filtered_data, positions=np.arange(0, n_mod), tick_labels=model_names, vert=False, showfliers=False, medianprops=medianprops, whis=(5, 95), widths=0.7)
 
 a2 = ax.boxplot(
-    np.concatenate(filtered_data), positions=[n_mod], labels=["MMM"], vert=False, showfliers=False, patch_artist=True, medianprops=medianprops_mm, whis=(5, 95), widths=0.7, boxprops=boxprops
+    np.concatenate(filtered_data), positions=[n_mod], tick_labels=["MMM"], vert=False, showfliers=False, patch_artist=True, medianprops=medianprops_mm, whis=(5, 95), widths=0.7, boxprops=boxprops
 )
-a2b = ax.boxplot(pr_ratio_bp, positions=[n_mod], labels=[""], vert=False, showfliers=False, medianprops=medianprops, whis=(5, 95), widths=0.7)
+a2b = ax.boxplot(pr_ratio_bp, positions=[n_mod], tick_labels=[""], vert=False, showfliers=False, medianprops=medianprops, whis=(5, 95), widths=0.7)
 
 ax.yaxis.tick_right()
 ax.set_xlim(1, 10000)
@@ -579,9 +579,11 @@ deltaI_mm = np.round(target_value - t_1900, 1)
 deltaI_mm = deltaI_mm.reshape(deltaI_mm.shape + (1,))
 
 
-b = ax.boxplot(deltaI, positions=np.arange(0, n_mod), labels=model_names, vert=False, showfliers=False, medianprops=medianprops, widths=0.7)
-b2 = ax.boxplot(deltaI_mm, positions=[n_mod], labels=[""], vert=False, showfliers=False, medianprops=medianprops, widths=0.7)
-b3 = ax.boxplot(np.concatenate(deltaI), positions=[n_mod], labels=["MMM"], vert=False, showfliers=False, patch_artist=True, medianprops=medianprops_mm, whis=(5, 95), widths=0.7, boxprops=boxprops)
+b = ax.boxplot(deltaI, positions=np.arange(0, n_mod), tick_labels=model_names, vert=False, showfliers=False, medianprops=medianprops, widths=0.7)
+b2 = ax.boxplot(deltaI_mm, positions=[n_mod], tick_labels=[""], vert=False, showfliers=False, medianprops=medianprops, widths=0.7)
+b3 = ax.boxplot(
+    np.concatenate(deltaI), positions=[n_mod], tick_labels=["MMM"], vert=False, showfliers=False, patch_artist=True, medianprops=medianprops_mm, whis=(5, 95), widths=0.7, boxprops=boxprops
+)
 
 ax.set_xlim(0, 4)
 ax.set_xlabel("Change in intensity [°C]")
