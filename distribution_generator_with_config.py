@@ -534,6 +534,7 @@ figureName = "dist_plot.png"
 plt.savefig(figurePath + figureName, dpi=300, bbox_inches="tight")
 
 
+### 3) Boxplots with model spread
 medianprops = dict(linestyle="-", linewidth=2.5, color=colors["boxplot_median"])
 medianprops_mm = dict(
     linestyle=None,
