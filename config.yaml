@@ -11,7 +11,7 @@ station:
   frost_client_id: "f2393df4-a312-4c7a-a287-cc0fd6180af1" # client ID for Frost API, see https://frost.met.no/howto.html
 
 analysis:
-  target_mon: 17   # Target Month (1-12) / Season (13-16) / Annual mean (17)? (e.g., 12)
+  target_mon: 17  # Target Month (1-12) / Season (13-16) / Annual mean (17)? (e.g., 12)
   y_target: 2025  # Target year
   y_climate: 2050 # Future climate year
   y_preind: 1900  # Preindustrial climate year
@@ -25,7 +25,7 @@ general_settings:
   valmin: -40.0
   valmax: 40.0
   nbins: 1601
-  n_bts: 10 # Number of bootstrapping in the uncertainty estimate
+  n_bts: 1000 # Number of bootstrapping in the uncertainty estimate
   input_path: "/home/amska0224/Documents/Prosjekter/Attribusjonstjeneste/Tools_testing/cmip6-attribution/" # input path for the datafiles
   figurePath: "/home/amska0224/Documents/Prosjekter/Attribusjonstjeneste/Tools_testing/cmip6-attribution/figures/2025_annual/" # output path for figures
   output_path: "/home/amska0224/Documents/Prosjekter/Attribusjonstjeneste/Tools_testing/cmip6-attribution/results/2025_annual/"

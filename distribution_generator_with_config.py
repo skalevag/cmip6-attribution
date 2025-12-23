@@ -473,7 +473,7 @@ for ax in axlist:
     ax.set_xlim(np.floor(np.nanmin(obs_temp.loc[y1base:y2base].values.squeeze())) - 3, np.ceil(np.nanmax(obs_temp)) + 4)
     ax.set_xlabel("Temperature [°C]")
     ax.grid(True, zorder=1)
-    ax.set_ylim(0, 0.5)
+    ax.set_ylim(0, max([f_preind.max(), f_target.max(), f_future.max()]) + 0.1)
 ax1.set_ylabel("Relative frequency / probability density [1/°C]")
 ax1.legend(loc="upper right", frameon=False, ncol=3, bbox_to_anchor=(0.92, 1.1))
 ax2.legend(loc="upper right", frameon=False, ncol=3, bbox_to_anchor=(1, 1.1))
