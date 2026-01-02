@@ -61,6 +61,8 @@ elif config["station"]["organisation"] == "MetNo":
     fmisid = 0
     metnosid = str(config["station"]["id"])
     frost_client_id = config["station"]["frost_client_id"]
+    homogenised = config["data"]["homogenised"]
+    allow_missing_in_annual = config["data"]["allow_missing_in_annual"]
 
 target_mon = config["analysis"]["target_mon"]
 y_target = config["analysis"]["y_target"]
@@ -134,7 +136,7 @@ for the Tglob-regressed changes in mean and variability
 if fmisid != 0:
     obs_temp = subroutines.read_obs_temp(input_path, fmisid, target_mon).loc[y1base:]
 else:
-    obs_temp = subroutines.read_obs_temp_frost(frost_client_id, metnosid, target_mon).loc[y1base:]
+    obs_temp = subroutines.read_obs_temp_frost(frost_client_id, metnosid, target_mon, homogenised=homogenised, allow_missing_in_annual=allow_missing_in_annual).loc[y1base:]
 
 
 ### B) The coefficients for the Tglob-regressed changes in mean and variability

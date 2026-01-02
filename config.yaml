@@ -10,6 +10,10 @@ station:
   organisation: "MetNo" # FMI or MetNo
   frost_client_id: "f2393df4-a312-4c7a-a287-cc0fd6180af1" # client ID for Frost API, see https://frost.met.no/howto.html
 
+data: # only for MET Norway data 
+  homogenised: True
+  allow_missing_in_annual: False
+
 analysis:
   target_mon: 17  # Target Month (1-12) / Season (13-16) / Annual mean (17)? (e.g., 12)
   y_target: 2025  # Target year
@@ -20,7 +24,7 @@ analysis:
 
 general_settings:
   y1base: 1850 # first year of observations used in calculation of probability distributions
-  y2base: 2024 # last year of observations used in calculation of probability distributions
+  y2base: 2025 # last year of observations used in calculation of probability distributions
   # Assuming monthly mean temperatures are within -40 ... +40 C
   valmin: -40.0
   valmax: 40.0

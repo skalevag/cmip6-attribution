@@ -319,10 +319,10 @@ def read_obs_temp(input_path, fmisid, target_mon):
     return obs_temp
 
 
-def read_obs_temp_frost(frost_client_id, metnosid, target_mon):
+def read_obs_temp_frost(frost_client_id: str, metnosid: str, target_mon: int, homogenised: bool = True, allow_missing_in_annual=False):
 
     # read raw observations from Frost
-    all_obs_months = read_monthly_temps_from_frost(metnosid, frost_client_id, homogenised=True)
+    all_obs_months = read_monthly_temps_from_frost(metnosid, frost_client_id, homogenised=homogenised)
 
     if target_mon <= 12:
         obs_temp = all_obs_months[all_obs_months.index.month == target_mon].loc[slice("1850-01-01", None)]
@@ -340,7 +340,12 @@ def read_obs_temp_frost(frost_client_id, metnosid, target_mon):
         obs_temp = all_obs_months.rolling(window=3).mean()[all_obs_months.index.month == 11].loc[slice("1850-01-01", None)]
         obs_temp.index = obs_temp.index.year
     elif target_mon == 17:
-        obs_temp = all_obs_months.groupby(all_obs_months.index.year).apply(lambda g: g.mean(skipna=False)).loc[1850:]
+        if allow_missing_in_annual:
+            # allow a single missing value when calculating annual temperature
+            obs_temp = all_obs_months.groupby(all_obs_months.index.year).apply(lambda g: g.mean(skipna=True))[all_obs_months.groupby(all_obs_months.index.year).count() >= 11]
+        else:
+            # do not allow any missing values when calculating annual temperature
+            obs_temp = all_obs_months.groupby(all_obs_months.index.year).apply(lambda g: g.mean(skipna=False)).loc[1850:]
     if target_mon > 17:
         import sys
 
